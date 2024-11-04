@@ -5,6 +5,4 @@
 ```sh
 src
 ├── ebi         # Desktop and Browser ("ebi" from Ebiten Game Engine)
-├── libretro    # Libretro
-└── profile     # Profiler(For debugging and performance analysis)
 ```
