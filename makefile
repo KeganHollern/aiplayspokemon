@@ -16,7 +16,7 @@ build:
 	go build -o build/$(NAME)$(EXE) ./src/ebi
 
 run:
-	go run ./src/ebi
+	go run ./src/ebi ./rom/PokemonYellow.gb
 
 clean:
 	rm -rf build

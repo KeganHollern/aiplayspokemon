@@ -9,9 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/akatsuki105/dawngb/agent"
 	"github.com/akatsuki105/dawngb/core"
 	"github.com/ebitengine/oto/v3"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var emu *Emu
@@ -25,6 +27,7 @@ var keyMap = map[ebiten.Key]string{
 	ebiten.KeyArrowDown:  "DOWN",
 	ebiten.KeyArrowLeft:  "LEFT",
 	ebiten.KeyArrowRight: "RIGHT",
+	ebiten.KeyT:          "AI_DEBUG",
 }
 
 var standardButtonToString = map[ebiten.StandardGamepadButton]string{
@@ -60,7 +63,15 @@ var inputMapWeb = map[string]bool{
 	"RIGHT":  false,
 }
 
+type AI struct {
+	vision  *agent.Vision
+	planner *agent.Planner
+	actor   *agent.Actor
+}
+
 type Emu struct {
+	ai AI
+
 	c      core.Core
 	active bool
 	paused bool
@@ -86,6 +97,9 @@ func createEmu() *Emu {
 		taskQueue:    make([]func(), 0, 10),
 	}
 	e.c = core.NewGB(e.sampleBuffer)
+	e.ai.vision = agent.NewVisionAgent()
+	e.ai.planner = agent.NewPlannerAgent()
+	e.ai.actor = agent.NewActorAgent()
 
 	// init Audio
 	op := oto.NewContextOptions{
@@ -190,6 +204,7 @@ func (e *Emu) Draw(screen *ebiten.Image) {
 				img.Set(x, y, data[y*w+x])
 			}
 		}
+		e.ai.vision.SetImage(img)
 		screen.DrawImage(ebiten.NewImageFromImage(img), nil)
 	}
 }
@@ -211,11 +226,44 @@ func (e *Emu) pollInput() {
 	}
 }
 
+var last_input string
+
 func (e *Emu) pollKeyInput() {
 	for key, input := range keyMap {
 		if _, ok := inputMap[input]; ok {
 			if ebiten.IsKeyPressed(key) {
 				inputMap[input] = true
+			}
+		} else if input == "AI_DEBUG" {
+			if inpututil.IsKeyJustPressed(key) {
+				go func() {
+					desc, err := e.ai.vision.DescribeScene()
+					if err != nil {
+						fmt.Printf("ERR: %s\n", err.Error())
+						return
+					}
+
+					plan, err := e.ai.planner.Plan(desc, last_input)
+					if err != nil {
+						fmt.Printf("ERR: %s\n", err.Error())
+						return
+					}
+
+					act, err := e.ai.actor.Act(desc, plan)
+					if err != nil {
+						fmt.Printf("ERR: %s\n", err.Error())
+						return
+					}
+
+					last_input = strings.Join(act, ", ")
+
+					fmt.Println(desc)
+					fmt.Println("---")
+					fmt.Println(plan)
+					fmt.Println("---")
+					fmt.Println(strings.Join(act, ", "))
+
+				}()
 			}
 		}
 	}
