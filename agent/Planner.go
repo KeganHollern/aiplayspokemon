@@ -13,9 +13,8 @@ const (
 Your job is to guide the journey. 
 The user will describe to you the scene.
 The user will also provide the last input they gave the game. 
-Start your reply by describing what has likely just taken place.
+Start your reply with 1 sentence on what impact the users last input had on the game.
 Finish your reply by 1-2 sentences of what the user should do next.
-Use the users last input to correct their actions or change your plan.
 Be very explicit and concise.`
 	planner_model                 = openai.GPT4oLatest
 	planner_max_completion_tokens = 200
