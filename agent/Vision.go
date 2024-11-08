@@ -22,6 +22,7 @@ Do not suggest actions for the user.
 Describe details like doors, sprites, and directions where the map continues off screen.
 Describe if the player is up against a wall or the edge of the map.
 When in a room, the space outside of the room will appear dark gray or black.
+Be sure to describe when the exit of the room is clearly visible, sometimes this will be shown as a carpet along the bottom wall.
 Use directions like UP DOWN LEFT and RIGHT to describe the direction of things from the player.
 Also specify if the player is facing anything important.
 Estimate distance of objects from the player.`
