@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/akatsuki105/dawngb/agent"
 	"github.com/akatsuki105/dawngb/core"
 	"github.com/ebitengine/oto/v3"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -63,14 +62,8 @@ var inputMapWeb = map[string]bool{
 	"RIGHT":  false,
 }
 
-type AI struct {
-	vision  *agent.Vision
-	planner *agent.Planner
-	actor   *agent.Actor
-}
-
 type Emu struct {
-	ai AI
+	ai *AI
 
 	c      core.Core
 	active bool
@@ -97,9 +90,7 @@ func createEmu() *Emu {
 		taskQueue:    make([]func(), 0, 10),
 	}
 	e.c = core.NewGB(e.sampleBuffer)
-	e.ai.vision = agent.NewVisionAgent()
-	e.ai.planner = agent.NewPlannerAgent()
-	e.ai.actor = agent.NewActorAgent()
+	e.ai = NewAI()
 
 	// init Audio
 	op := oto.NewContextOptions{
@@ -204,7 +195,7 @@ func (e *Emu) Draw(screen *ebiten.Image) {
 				img.Set(x, y, data[y*w+x])
 			}
 		}
-		e.ai.vision.SetImage(img)
+		e.ai.SetLatestFrame(img)
 		screen.DrawImage(ebiten.NewImageFromImage(img), nil)
 	}
 }
@@ -221,12 +212,18 @@ func (e *Emu) pollInput() {
 	e.pollKeyInput()
 	e.pollGamepadInput()
 
+	// apply AI inputs when they come throught
+	for key, input := range e.ai.PollInput() {
+		if input {
+			inputMap[key] = true
+		}
+	}
+
+	// send human + ai inputs to emulator
 	for key, input := range inputMap {
 		e.c.SetKeyInput(key, input)
 	}
 }
-
-var last_input string
 
 func (e *Emu) pollKeyInput() {
 	for key, input := range keyMap {
@@ -236,34 +233,7 @@ func (e *Emu) pollKeyInput() {
 			}
 		} else if input == "AI_DEBUG" {
 			if inpututil.IsKeyJustPressed(key) {
-				go func() {
-					desc, err := e.ai.vision.DescribeScene()
-					if err != nil {
-						fmt.Printf("ERR: %s\n", err.Error())
-						return
-					}
-
-					plan, err := e.ai.planner.Plan(desc, last_input)
-					if err != nil {
-						fmt.Printf("ERR: %s\n", err.Error())
-						return
-					}
-
-					act, err := e.ai.actor.Act(desc, plan)
-					if err != nil {
-						fmt.Printf("ERR: %s\n", err.Error())
-						return
-					}
-
-					last_input = strings.Join(act, ", ")
-
-					fmt.Println(desc)
-					fmt.Println("---")
-					fmt.Println(plan)
-					fmt.Println("---")
-					fmt.Println(strings.Join(act, ", "))
-
-				}()
+				go e.ai.Start()
 			}
 		}
 	}
