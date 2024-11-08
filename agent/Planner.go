@@ -15,7 +15,13 @@ The user will describe to you the scene.
 The user will also provide the last input they gave the game. 
 Start your reply with 1 sentence on what impact the users last input had on the game.
 Finish your reply by 1-2 sentences of what the user should do next.
-Be very explicit and concise.`
+Be very explicit and concise.
+
+Some notes about the game which may help you when deciding how to interpret the scene description:
+- The door to exit a room will appear with a carpet on the bottom of the room.
+- Sometimes the exit will be staircases in other locations of the room, such as the top.
+- Remember that inputs are directional to the _camera_ and not the player.
+`
 	planner_model                 = openai.GPT4oLatest
 	planner_max_completion_tokens = 200
 )

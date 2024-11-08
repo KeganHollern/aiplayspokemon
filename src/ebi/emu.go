@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/akatsuki105/dawngb/core"
 	"github.com/ebitengine/oto/v3"
@@ -136,6 +137,7 @@ func (e *Emu) LoadROMFromPath(path string) error {
 	ext := filepath.Ext(path)
 	if ext == ".gbc" || ext == ".gb" {
 		savPath := strings.ReplaceAll(path, ext, ".sav")
+		sram_dump_filename = savPath // make this path as where we save the sram every 5s
 		if _, err := os.Stat(savPath); err == nil {
 			if savData, err := os.ReadFile(savPath); err == nil {
 				err := e.c.LoadSRAM(savData)
@@ -158,7 +160,15 @@ func (e *Emu) LoadROM(data []byte) error {
 	return err
 }
 
+var sram_dump_filename = "save.bin"
+var last_sram_dump time.Time = time.Now()
+
 func (e *Emu) Update() error {
+	if time.Since(last_sram_dump) > time.Second*5 { // Dump SRAM every 5 seconds
+		go os.WriteFile(sram_dump_filename, e.c.SRAM(), 0644) // on another thread
+		last_sram_dump = time.Now()                           // Reset timer
+	}
+
 	if len(e.taskQueue) > 0 {
 		for _, task := range e.taskQueue {
 			task()

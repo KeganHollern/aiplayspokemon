@@ -14,7 +14,10 @@ const (
 	actor_prompt = `You are playing Pokemon Yellow.
 You will be given a description of the scene in the game.
 You will also be given a goal to achieve.
-Your job is to choose what sequence of buttons to press next to progress us towards the goal.`
+Your job is to choose what sequence of buttons to press next to progress us towards the goal.
+
+Some notes about Pokemon Input to help you:
+- Inputs are relative to the camera, not the player. Up is not forward, but UP in the gameworld.`
 	actor_model = openai.GPT4oMini
 )
 

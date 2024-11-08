@@ -21,7 +21,9 @@ Your job is to describe the image to the user.
 Do not suggest actions for the user.
 Describe details like doors, sprites, and directions where the map continues off screen.
 Describe if the player is up against a wall or the edge of the map.
+When in a room, the space outside of the room will appear dark gray or black.
 Use directions like UP DOWN LEFT and RIGHT to describe the direction of things from the player.
+Also specify if the player is facing anything important.
 Estimate distance of objects from the player.`
 	vision_model                  = openai.GPT4oLatest
 	vision_max_description_tokens = 1000
@@ -94,8 +96,13 @@ func (ai *Vision) DescribeScene() (string, error) {
 	}
 	b64url := fmt.Sprintf("data:image/jpeg;base64,%s", b64)
 
-	fmt.Printf("Scene:\n")
-	fmt.Printf("\033]1337;File=name=image.jpg;inline=1:%s\a\n", b64)
+	// if in iterm2 we can render the image we captured for debugging
+	if os.Getenv("TERM_PROGRAM") == "iTerm.app" {
+		fmt.Printf("Scene:\n")
+		fmt.Printf("\033]1337;File=name=image.jpg;inline=1:%s\a\n", b64)
+	} else {
+		fmt.Println("Running outside iTerm2; image not displayed.")
+	}
 
 	// restrict history
 	messages := ai.history
