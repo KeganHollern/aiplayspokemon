@@ -19,13 +19,20 @@ const (
 You will be given an image from the game.
 Your job is to describe the image to the user.
 Do not suggest actions for the user.
-Describe details like doors, sprites, and directions where the map continues off screen.
-Describe if the player is up against a wall or the edge of the map.
-When in a room, the space outside of the room will appear dark gray or black.
-Be sure to describe when the exit of the room is clearly visible, sometimes this will be shown as a carpet along the bottom wall.
-Use directions like UP DOWN LEFT and RIGHT to describe the direction of things from the player.
-Also specify if the player is facing anything important.
-Estimate distance of objects from the player.`
+Describe details like 
+- directions and distances to NPCs
+- directions and distances to sprites
+- if the player is blocked
+- directions and distances to the edge of the map
+- directions where the map continues
+- if the player is directly next to, and facing, an interactable such as an NPC
+- other useful information that the user might need to know
+Use directions like UP DOWN LEFT and RIGHT.
+Things to note:
+- dark gray areas are outside of the map and not traversable space
+- the player is always in the center of the image.
+- the camera is relative to the game world.
+`
 	vision_model                  = openai.GPT4oLatest
 	vision_max_description_tokens = 1000
 )
@@ -107,7 +114,7 @@ func (ai *Vision) DescribeScene() (string, error) {
 
 	// restrict history
 	messages := ai.history
-	if len(messages) > (historical_frames * 2) {
+	if len(messages) > (vision_historical_frames * 2) {
 		messages = messages[2:]
 	}
 

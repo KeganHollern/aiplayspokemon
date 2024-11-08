@@ -17,7 +17,8 @@ You will also be given a goal to achieve.
 Your job is to choose what sequence of buttons to press next to progress us towards the goal.
 
 Some notes about Pokemon Input to help you:
-- Inputs are relative to the camera, not the player. Up is not forward, but UP in the gameworld.`
+- Inputs are relative to the camera, not the player. Up is not forward, but UP in the gameworld.
+- Dialog and interaction can be progressed with the A or B buttons.`
 	actor_model = openai.GPT4oMini
 )
 
