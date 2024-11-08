@@ -10,4 +10,4 @@ place a ROM for pokemon yellow at `./rom/PokemonYellow.gb`.
 
 `make run`
 
-> TEMP: when in game, press `T` to make the AI generate an action to take.
+when in game, press `T` to start the AI loop.
